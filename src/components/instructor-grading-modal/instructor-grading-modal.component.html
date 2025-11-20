@@ -1,0 +1,89 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="requestCloseModal()">
+  <div class="w-full max-w-3xl h-[85vh] bg-slate-800 border border-slate-700 rounded-2xl shadow-lg flex flex-col animate-scale-in" (click)="$event.stopPropagation()">
+    
+    <!-- Header -->
+    <header class="flex items-center justify-between p-4 border-b border-slate-700 flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <img [src]="submission().studentAvatarUrl" [alt]="submission().studentName" class="h-12 w-12 rounded-full">
+        <div>
+            <h2 class="text-xl font-bold text-white">{{ submission().assignmentTitle }}</h2>
+            <p class="text-sm text-slate-400">Submission by {{ submission().studentName }}</p>
+        </div>
+      </div>
+      <button (click)="requestCloseModal()" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-y-auto p-6 space-y-6">
+      <!-- Submission Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-slate-900/50 p-4 rounded-lg">
+          <p class="text-sm text-slate-400">Submission Time</p>
+          <p class="text-lg font-semibold text-white mt-1">{{ submission().submissionTimestamp | date:'full' }}</p>
+        </div>
+         <div class="bg-slate-900/50 p-4 rounded-lg">
+          <p class="text-sm text-slate-400">Status</p>
+          <div class="mt-1">
+             <span class="px-2 py-1 text-base font-medium rounded-full"
+                  [class.bg-emerald-900/50]="submission().onTimeStatus === 'On Time'"
+                  [class.text-emerald-300]="submission().onTimeStatus === 'On Time'"
+                  [class.bg-yellow-900/50]="submission().onTimeStatus === 'Late'"
+                  [class.text-yellow-300]="submission().onTimeStatus === 'Late'">
+                  {{ submission().onTimeStatus }}
+              </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submission Content -->
+      <div>
+        <h3 class="font-semibold text-slate-300 mb-2">Student's Submission</h3>
+        <div class="p-4 bg-slate-900/50 rounded-md border border-slate-700 space-y-3">
+          <p class="text-slate-300 whitespace-pre-wrap">{{ submission().submission.text }}</p>
+          @if (submission().submission.fileName; as fileName) {
+            <div class="flex items-center gap-2 pt-3 border-t border-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+              <span class="text-sm font-medium text-emerald-400">{{ fileName }}</span>
+                <button type="button" (click)="downloadSubmissionFile()" class="text-sm font-medium text-sky-400 hover:text-sky-300 ml-auto">Download</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Grading Form -->
+      <form [formGroup]="gradingForm" (ngSubmit)="onSubmit()" class="space-y-4 pt-6 border-t border-slate-700">
+          <h3 class="font-semibold text-slate-300">Grade & Feedback</h3>
+          <div>
+            <label for="score" class="block text-sm font-medium text-slate-300 mb-1">Score</label>
+            <input type="text" id="score" formControlName="score" class="w-full md:w-1/2 bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500" placeholder="e.g., 95/100">
+          </div>
+            <div>
+            <label for="feedback" class="block text-sm font-medium text-slate-300 mb-1">Feedback</label>
+            <textarea id="feedback" formControlName="feedback" rows="4" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Provide constructive feedback..."></textarea>
+          </div>
+      </form>
+    </main>
+
+    <!-- Footer -->
+    <footer class="flex items-center justify-end p-4 border-t border-slate-700 space-x-3 bg-slate-800/50 rounded-b-2xl flex-shrink-0">
+        <button (click)="requestCloseModal()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg">
+          Cancel
+        </button>
+        <button (click)="onSubmit()" [disabled]="gradingForm.invalid" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed">
+          Save Grade
+        </button>
+    </footer>
+  </div>
+</div>
+
+@if(isConfirmOpen()) {
+  <app-confirmation-modal
+    title="Discard Changes?"
+    message="You have unsaved changes to the grade/feedback. Are you sure you want to discard them?"
+    confirmText="Discard"
+    (confirm)="handleConfirm()"
+    (cancel)="closeConfirm()">
+  </app-confirmation-modal>
+}

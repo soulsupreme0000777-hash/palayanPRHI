@@ -1,0 +1,185 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="onClose()">
+  <div class="w-full max-w-3xl h-[85vh] bg-slate-800 border border-slate-700 rounded-2xl shadow-lg flex flex-col" (click)="$event.stopPropagation()">
+    
+    <!-- Header -->
+    <header class="flex items-center justify-between p-4 border-b border-slate-700 flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <img [src]="student().avatarUrl" [alt]="student().name" class="h-14 w-14 rounded-full">
+        <div>
+            <h2 class="text-xl font-bold text-white">{{ student().name }}</h2>
+            <p class="text-sm text-slate-400">{{ student().batch }}</p>
+        </div>
+      </div>
+      <button (click)="onClose()" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden p-6 space-y-6">
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-900/50 p-4 rounded-lg text-center">
+                <p class="text-sm text-slate-400">Overall Progress</p>
+                <p class="text-2xl font-bold text-emerald-400 mt-1">{{ student().progress }}%</p>
+            </div>
+            <div class="bg-slate-900/50 p-4 rounded-lg text-center">
+                <p class="text-sm text-slate-400">Attendance</p>
+                <p class="text-2xl font-bold text-white mt-1">{{ student().attendance }}</p>
+            </div>
+             <div class="bg-slate-900/50 p-4 rounded-lg text-center">
+                <p class="text-sm text-slate-400">Avg. Score</p>
+                <p class="text-2xl font-bold text-white mt-1">{{ student().averageScore || 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-900/50 p-4 rounded-lg text-center">
+                <p class="text-sm text-slate-400">Assignments</p>
+                <p class="text-2xl font-bold text-white mt-1">{{ student().assignmentsCompleted }}/{{ student().totalAssignments }}</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex-shrink-0 border-b border-slate-700">
+            <nav class="flex space-x-4">
+                <button 
+                    (click)="setActiveTab('assignments')"
+                    class="px-3 py-2 font-medium text-sm rounded-t-lg"
+                    [class.text-emerald-400]="activeTab() === 'assignments'"
+                    [class.border-b-2]="activeTab() === 'assignments'"
+                    [class.border-emerald-400]="activeTab() === 'assignments'"
+                    [class.text-slate-400]="activeTab() !== 'assignments'"
+                    [class.hover:text-white]="activeTab() !== 'assignments'">
+                    Assignments
+                </button>
+                 <button 
+                    (click)="setActiveTab('attendance')"
+                    class="px-3 py-2 font-medium text-sm rounded-t-lg"
+                    [class.text-emerald-400]="activeTab() === 'attendance'"
+                    [class.border-b-2]="activeTab() === 'attendance'"
+                    [class.border-emerald-400]="activeTab() === 'attendance'"
+                    [class.text-slate-400]="activeTab() !== 'attendance'"
+                    [class.hover:text-white]="activeTab() !== 'attendance'">
+                    Attendance
+                </button>
+                 <button 
+                    (click)="setActiveTab('documents')"
+                    class="px-3 py-2 font-medium text-sm rounded-t-lg"
+                    [class.text-emerald-400]="activeTab() === 'documents'"
+                    [class.border-b-2]="activeTab() === 'documents'"
+                    [class.border-emerald-400]="activeTab() === 'documents'"
+                    [class.text-slate-400]="activeTab() !== 'documents'"
+                    [class.hover:text-white]="activeTab() !== 'documents'">
+                    Documents
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="flex-1 overflow-y-auto">
+            @switch (activeTab()) {
+                @case ('assignments') {
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th class="p-2 text-sm font-semibold text-slate-400">Title</th>
+                                    <th class="p-2 text-sm font-semibold text-slate-400">Due Date</th>
+                                    <th class="p-2 text-sm font-semibold text-slate-400">Status</th>
+                                    <th class="p-2 text-sm font-semibold text-slate-400">Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (assignment of student().assignments; track assignment.title) {
+                                    <tr class="border-b border-slate-700 last:border-0">
+                                        <td class="p-2 text-white">{{ assignment.title }}</td>
+                                        <td class="p-2 text-slate-300">{{ assignment.dueDate }}</td>
+                                        <td class="p-2">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                                  [class.bg-emerald-900/50]="assignment.status === 'Graded'"
+                                                  [class.text-emerald-300]="assignment.status === 'Graded'"
+                                                  [class.bg-sky-900/50]="assignment.status === 'Submitted'"
+                                                  [class.text-sky-300]="assignment.status === 'Submitted'"
+                                                  [class.bg-yellow-900/50]="assignment.status === 'Upcoming'"
+                                                  [class.text-yellow-300]="assignment.status === 'Upcoming'">
+                                              {{ assignment.status }}
+                                            </span>
+                                        </td>
+                                        <td class="p-2 text-white font-semibold">{{ assignment.score || '-' }}</td>
+                                    </tr>
+                                }
+                                @if (student().assignments.length === 0) {
+                                    <tr><td colspan="4" class="p-4 text-center text-slate-500">No assignments for this student.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                @case ('attendance') {
+                     <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th class="p-2 text-sm font-semibold text-slate-400">Date</th>
+                                    <th class="p-2 text-sm font-semibold text-slate-400">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (record of student().attendanceRecords; track record.date) {
+                                     <tr class="border-b border-slate-700 last:border-0">
+                                        <td class="p-2 text-white">{{ record.date }}</td>
+                                        <td class="p-2">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                                [class.bg-emerald-900/50]="record.status === 'Present'"
+                                                [class.text-emerald-300]="record.status === 'Present'"
+                                                [class.bg-yellow-900/50]="record.status === 'Late'"
+                                                [class.text-yellow-300]="record.status === 'Late'"
+                                                [class.bg-red-900/50]="record.status === 'Absent'"
+                                                [class.text-red-300]="record.status === 'Absent'">
+                                            {{ record.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (student().attendanceRecords.length === 0) {
+                                    <tr><td colspan="2" class="p-4 text-center text-slate-500">No attendance records found.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                @case ('documents') {
+                    <ul class="space-y-3 pt-4">
+                        @for(doc of studentDocuments(); track doc.name) {
+                            <li class="flex items-center justify-between p-3 rounded-md bg-slate-900/50">
+                            <div>
+                                <p class="font-medium text-white">{{ doc.name }}</p>
+                                @if(doc.status === 'Uploaded') {
+                                <span class="text-xs text-emerald-400 flex items-center gap-1.5 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                    {{ doc.fileName }}
+                                </span>
+                                } @else {
+                                <span class="text-xs text-yellow-400">
+                                    {{ doc.status }}
+                                </span>
+                                }
+                            </div>
+                            @if(doc.status === 'Uploaded' && doc.filePath) {
+                                <button (click)="viewDownloadDocument(doc)" class="text-sm font-semibold text-sky-400 hover:text-sky-300 whitespace-nowrap flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                View/Download
+                                </button>
+                            }
+                            </li>
+                        }
+                        @if(studentDocuments().length === 0) {
+                            <li>
+                                <p class="p-4 text-center text-slate-500">No documents available for this student.</p>
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+    </main>
+  </div>
+</div>

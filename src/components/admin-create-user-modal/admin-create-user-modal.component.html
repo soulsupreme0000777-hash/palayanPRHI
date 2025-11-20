@@ -1,0 +1,74 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="requestCloseModal()">
+  <div class="w-full max-w-lg bg-slate-800 border border-slate-700 rounded-2xl shadow-lg flex flex-col animate-scale-in" (click)="$event.stopPropagation()">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <header class="flex items-center justify-between p-4 border-b border-slate-700">
+        <h2 class="text-xl font-bold text-white">{{ isEditMode() ? 'Edit User' : 'Create New Instructor' }}</h2>
+        <button type="button" (click)="requestCloseModal()" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </header>
+      <div class="p-6 space-y-4">
+        <div>
+          <label for="name" class="block text-sm font-medium text-slate-300 mb-1">Full Name</label>
+          <input type="text" id="name" formControlName="name" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500">
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
+          <input type="email" id="email" formControlName="email" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500" [class.cursor-not-allowed]="isEditMode()" [class.bg-slate-900/80]="isEditMode()">
+        </div>
+        
+        <div>
+          <label for="password" class="block text-sm font-medium text-slate-300 mb-1">{{ isEditMode() ? 'New Password (optional)' : 'Password' }}</label>
+          <input type="password" id="password" formControlName="password" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500">
+          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+            <div class="text-xs text-red-400 mt-1">
+              @if (userForm.get('password')?.hasError('required')) {
+                <p>Password is required.</p>
+              }
+              @if (userForm.get('password')?.hasError('minlength')) {
+                <p>Password must be at least 8 characters long.</p>
+              }
+            </div>
+          }
+        </div>
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-slate-300 mb-1">{{ isEditMode() ? 'Confirm New Password' : 'Confirm Password' }}</label>
+          <input type="password" id="confirmPassword" formControlName="confirmPassword" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500">
+          @if (userForm.get('confirmPassword')?.touched) {
+            @if (userForm.get('confirmPassword')?.hasError('required')) {
+              <p class="text-xs text-red-400 mt-1">Please confirm the password.</p>
+            }
+            @if (userForm.hasError('mismatch')) {
+              <p class="text-xs text-red-400 mt-1">Passwords do not match.</p>
+            }
+          }
+        </div>
+        
+        <div>
+          <label for="role" class="block text-sm font-medium text-slate-300 mb-1">Role</label>
+          <select id="role" formControlName="role" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white focus:ring-emerald-500 focus:border-emerald-500" [class.cursor-not-allowed]="isEditMode()" [class.bg-slate-900/80]="isEditMode()">
+            <option [value]="RoleEnum.Admin">Admin</option>
+            <option [value]="RoleEnum.Instructor">Instructor</option>
+            <option [value]="RoleEnum.Student" [disabled]="true">Student Applicant</option>
+          </select>
+        </div>
+      </div>
+      <footer class="flex items-center justify-end p-4 border-t border-slate-700 space-x-3">
+        <button type="button" (click)="requestCloseModal()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+        <button type="submit" [disabled]="userForm.invalid" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed">
+          {{ isEditMode() ? 'Save Changes' : 'Create Instructor' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+@if(isConfirmOpen()) {
+  <app-confirmation-modal
+    title="Discard Changes?"
+    message="You have unsaved changes. Are you sure you want to discard them?"
+    confirmText="Discard"
+    (confirm)="handleConfirm()"
+    (cancel)="closeConfirm()">
+  </app-confirmation-modal>
+}

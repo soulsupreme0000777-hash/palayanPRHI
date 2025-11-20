@@ -1,0 +1,102 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="onClose()">
+  <div class="w-full max-w-2xl bg-slate-800 border border-slate-700 rounded-2xl shadow-lg flex flex-col animate-scale-in" (click)="$event.stopPropagation()">
+    <header class="flex items-center justify-between p-4 border-b border-slate-700">
+      <div>
+        <h2 class="text-xl font-bold text-white">Review Applicant: {{ applicant().name }}</h2>
+        <p class="text-sm text-slate-400">Review documents and enroll the applicant into a batch.</p>
+      </div>
+      <button type="button" (click)="onClose()" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </header>
+    
+    <main class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+      <!-- Documents Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-4">Submitted Documents</h3>
+        <ul class="space-y-3">
+          @for(doc of studentDocuments(); track doc.name) {
+            <li class="bg-slate-900/50 p-3 rounded-md">
+              @if(doc.status === 'Uploaded' && doc.filePath) {
+                @let isImg = isImageDoc(doc);
+                @let previewUrl = isImg ? docPreviewUrls().get(doc.filePath!) : null;
+                <div class="flex items-start gap-4">
+                  @if (isImg) {
+                    <div class="flex-shrink-0 w-24 h-24 bg-slate-800 rounded-md flex items-center justify-center">
+                       @if (previewUrl) {
+                         <img [src]="previewUrl" (click)="zoomImage(doc)" alt="Document Preview" class="w-full h-full object-cover rounded-md cursor-pointer hover:opacity-80">
+                       } @else {
+                          <div class="animate-pulse w-full h-full bg-slate-700 rounded-md"></div>
+                       }
+                    </div>
+                  }
+                  <div class="flex-grow">
+                    <p class="font-medium text-white">{{ doc.name }}</p>
+                    <span class="text-xs text-emerald-400 flex items-center gap-1.5 mt-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                      {{ doc.fileName }}
+                    </span>
+                     <div class="mt-3">
+                       <button (click)="downloadDocument(doc)" class="text-sm font-semibold text-sky-400 hover:text-sky-300 whitespace-nowrap flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Download
+                      </button>
+                     </div>
+                  </div>
+                </div>
+              } @else {
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="font-medium text-white">{{ doc.name }}</p>
+                    <span class="text-xs text-yellow-400">
+                      {{ doc.status }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </li>
+          }
+          @if(studentDocuments().length === 0) {
+              <li>
+                  <p class="p-4 text-center text-slate-500">No documents available for this student.</p>
+              </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Enrollment Section -->
+      <div class="pt-6 border-t border-slate-700">
+        <h3 class="text-lg font-semibold text-white mb-4">Enrollment Action</h3>
+        @if(availableBatches().length > 0) {
+          <div>
+            <label for="batchSelect" class="block text-sm font-medium text-slate-300 mb-1">Select a Batch</label>
+            <select id="batchSelect" [(ngModel)]="selectedBatchId" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white focus:ring-emerald-500 focus:border-emerald-500">
+              <option value="" disabled>Choose a batch...</option>
+              @for(batch of availableBatches(); track batch.id) {
+                <option [value]="batch.id">{{ batch.name }} ({{ batch.status }})</option>
+              }
+            </select>
+          </div>
+        } @else {
+          <p class="text-center text-yellow-400 bg-yellow-900/50 p-4 rounded-md border border-yellow-700">You do not have any active or upcoming batches. Please ask an administrator to create one for you.</p>
+        }
+      </div>
+    </main>
+    
+    <footer class="flex items-center justify-end p-4 border-t border-slate-700 space-x-3">
+      <button type="button" (click)="onClose()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+      <button type="button" (click)="onEnroll()" [disabled]="!selectedBatchId || availableBatches().length === 0" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed">
+        Enroll Student
+      </button>
+    </footer>
+  </div>
+  
+  @if (zoomedImageUrl(); as url) {
+    <div class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 animate-fade-in" (click)="closeZoom()">
+      <img [src]="url" alt="Zoomed Document" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-scale-in" (click)="$event.stopPropagation()">
+      <button (click)="closeZoom()" class="absolute top-4 right-4 text-white hover:text-slate-300 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+  }
+</div>

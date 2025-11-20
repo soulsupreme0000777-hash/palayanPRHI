@@ -1,0 +1,7 @@
+<app-notification></app-notification>
+@if (!currentUser()) {
+  <app-login></app-login>
+} @else {
+  @let user = currentUser()!;
+  <app-dashboard [user]="user" (logout)="handleLogout()"></app-dashboard>
+}

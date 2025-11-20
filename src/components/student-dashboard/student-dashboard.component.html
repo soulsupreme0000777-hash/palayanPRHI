@@ -1,0 +1,138 @@
+@if (assessmentStatus() === 'enrolled') {
+  <div class="p-6 space-y-6">
+    <!-- Progress Tracker -->
+    <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+        <div>
+           <h3 class="text-lg font-semibold text-white">My Training Progress</h3>
+           <p class="text-sm text-emerald-300 font-medium">{{ currentUserBatch() }}</p>
+        </div>
+        <p class="text-slate-400 text-sm sm:text-base">Finish Line: <span class="font-medium text-emerald-400">{{ expectedCompletionDate }}</span></p>
+      </div>
+      <div class="mt-4">
+        <div class="flex justify-between mb-1">
+          <span class="text-base font-medium text-white">Overall Completion</span>
+          <span class="text-sm font-medium text-white">{{ trainingProgress }}%</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-4">
+          <div class="bg-gradient-to-r from-emerald-500 to-green-400 h-4 rounded-full" [style.width.%]="trainingProgress"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Modules -->
+      <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">My Modules</h3>
+        <ul class="space-y-3">
+          @for(module of modules; track module.title) {
+            <li class="flex items-center justify-between p-3 rounded-md bg-slate-900/50">
+              <div>
+                <p class="font-medium text-white">{{ module.title }}</p>
+                @if (module.completedDate) {
+                  <p class="text-xs text-slate-400">Completed on {{ module.completedDate }}</p>
+                }
+              </div>
+              <span class="px-2 py-1 text-xs font-medium rounded-full"
+                    [class.bg-emerald-900/50]="module.status === 'Completed'"
+                    [class.text-emerald-300]="module.status === 'Completed'"
+                    [class.bg-sky-900/50]="module.status === 'In Progress'"
+                    [class.text-sky-300]="module.status === 'In Progress'"
+                    [class.bg-slate-700]="module.status === 'Not Started'"
+                    [class.text-slate-300]="module.status === 'Not Started'">
+                {{ module.status }}
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Assignments -->
+      <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">My Assignments</h3>
+         <ul class="space-y-3">
+          @for(assignment of assignments; track assignment.title) {
+            <li class="flex items-start justify-between p-3 rounded-md bg-slate-900/50">
+              <div>
+                <p class="font-medium text-white">{{ assignment.title }}</p>
+                <p class="text-xs text-slate-400">Due: {{ assignment.dueDate }}</p>
+              </div>
+               <div class="text-right">
+                <span class="px-2 py-1 text-xs font-medium rounded-full"
+                    [class.bg-emerald-900/50]="assignment.status === 'Graded'"
+                    [class.text-emerald-300]="assignment.status === 'Graded'"
+                    [class.bg-sky-900/50]="assignment.status === 'Submitted'"
+                    [class.text-sky-300]="assignment.status === 'Submitted'"
+                    [class.bg-yellow-900/50]="assignment.status === 'Upcoming'"
+                    [class.text-yellow-300]="assignment.status === 'Upcoming'">
+                {{ assignment.status }}
+              </span>
+              @if(assignment.status === 'Graded') {
+                <p class="text-sm font-semibold text-white mt-1">{{ assignment.score }}</p>
+              }
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+} @else if (assessmentStatus() === 'passed') {
+  <div class="p-6 flex justify-center items-center min-h-full">
+    <div class="w-full max-w-2xl bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-10 text-center space-y-6">
+      <svg class="mx-auto h-16 w-16 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      </svg>
+      <h2 class="text-3xl font-bold text-white">Assessment Passed!</h2>
+      <p class="text-slate-300 text-lg">Your results have been submitted. An instructor will review your application and enroll you in a training batch shortly.</p>
+      <p class="text-slate-400">In the meantime, please complete your profile by uploading the required documents.</p>
+      <button (click)="navigateToDocuments()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105">
+        Go to My Documents
+      </button>
+    </div>
+  </div>
+} @else {
+  @switch (quizState()) {
+    @case ('intro') {
+      <div class="p-6 flex justify-center items-center min-h-full">
+        <div class="w-full max-w-2xl bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-10 text-center space-y-6">
+          <h2 class="text-3xl font-bold text-white">Welcome, Applicant!</h2>
+          <p class="text-slate-300 text-lg">Before you can access your training modules, you must first complete a short pre-assessment quiz. This helps us understand your current skill level.</p>
+          <p class="text-slate-400">The quiz consists of 10 multiple-choice grammar questions. You must score at least {{ passingScore }}/10 to pass.</p>
+          <button (click)="startQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105">
+            Take the Quiz
+          </button>
+        </div>
+      </div>
+    }
+    @case ('taking') {
+       <app-student-pre-assessment (quizSubmitted)="handleQuizSubmission($event)"></app-student-pre-assessment>
+    }
+    @case ('result') {
+      @if (lastScore(); as scoreInfo) {
+        <div class="p-6 flex justify-center items-center min-h-full">
+          <div class="w-full max-w-2xl bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-10 text-center space-y-6">
+            <h2 class="text-3xl font-bold text-white">Quiz Results</h2>
+            <p class="text-slate-300 text-lg">You scored:</p>
+            <p class="text-6xl font-bold" [class.text-emerald-400]="assessmentStatus() === 'passed'" [class.text-red-400]="assessmentStatus() === 'failed'">
+              {{ scoreInfo.score }}<span class="text-4xl text-slate-400"> / {{ scoreInfo.total }}</span>
+            </p>
+            @if (assessmentStatus() === 'passed') {
+              <p class="text-emerald-300 text-lg">Congratulations, you passed!</p>
+              <p class="text-slate-400">Your results have been submitted. You can now proceed to complete your documents while you wait for an instructor to enroll you.</p>
+              <button (click)="continueToDashboard()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 mt-4">
+                Continue to Dashboard
+              </button>
+            } @else {
+              <p class="text-red-300 text-lg">Unfortunately, you did not meet the passing score of {{ passingScore }}/{{ scoreInfo.total }}.</p>
+              <p class="text-slate-400">Please review your answers and try again.</p>
+              <button (click)="retryQuiz()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 mt-4">
+                Retry Quiz
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+}

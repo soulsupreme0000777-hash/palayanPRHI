@@ -1,0 +1,34 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="onClose()">
+  <div class="w-full max-w-lg bg-slate-800 border border-slate-700 rounded-2xl shadow-lg flex flex-col" (click)="$event.stopPropagation()">
+    <header class="flex items-center justify-between p-4 border-b border-slate-700">
+      <div>
+        <h2 class="text-xl font-bold text-white">Enroll Applicant</h2>
+        <p class="text-sm text-slate-400">Assign {{ applicant().name }} to a training batch.</p>
+      </div>
+      <button type="button" (click)="onClose()" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </header>
+    <div class="p-6 space-y-4">
+      @if(availableBatches().length > 0) {
+        <div>
+          <label for="batchSelect" class="block text-sm font-medium text-slate-300 mb-1">Select a Batch</label>
+          <select id="batchSelect" [(ngModel)]="selectedBatchId" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white focus:ring-emerald-500 focus:border-emerald-500">
+            <option value="" disabled>Choose a batch...</option>
+            @for(batch of availableBatches(); track batch.id) {
+              <option [value]="batch.id">{{ batch.name }} ({{ batch.status }})</option>
+            }
+          </select>
+        </div>
+      } @else {
+        <p class="text-center text-yellow-400 bg-yellow-900/50 p-4 rounded-md border border-yellow-700">You do not have any active or upcoming batches. Please ask an administrator to create one for you.</p>
+      }
+    </div>
+    <footer class="flex items-center justify-end p-4 border-t border-slate-700 space-x-3">
+      <button type="button" (click)="onClose()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+      <button type="button" (click)="onEnroll()" [disabled]="!selectedBatchId || availableBatches().length === 0" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed">
+        Enroll Student
+      </button>
+    </footer>
+  </div>
+</div>

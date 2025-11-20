@@ -1,0 +1,73 @@
+<div class="p-6 space-y-6">
+  <header>
+    <h2 class="text-2xl font-bold text-white">System Analytics</h2>
+    <p class="text-slate-400 mt-1">An overview of applicant and training performance.</p>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Applicant Funnel -->
+    <div class="md:col-span-2 lg:col-span-1 bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-white mb-4">Applicant Funnel</h3>
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-300">Total Applicants</span>
+          <span class="font-bold text-white text-xl">{{ applicantStats().total }}</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-1.5">
+          <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 100%"></div>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <span class="text-slate-300">Awaiting Assessment</span>
+          <span class="font-bold text-white text-xl">{{ applicantStats().pending }}</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-1.5">
+          <div class="bg-yellow-500 h-1.5 rounded-full" [style.width.%]="(applicantStats().pending / applicantStats().total) * 100"></div>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <span class="text-slate-300">Enrolled in Training</span>
+          <span class="font-bold text-white text-xl">{{ applicantStats().enrolled }}</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-1.5">
+          <div class="bg-emerald-500 h-1.5 rounded-full" [style.width.%]="(applicantStats().enrolled / applicantStats().total) * 100"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assessment Performance -->
+    <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6 flex flex-col justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-4">Pre-Assessment Performance</h3>
+        <p class="text-4xl font-bold text-emerald-400">{{ assessmentPerformance().passRate }}<span class="text-2xl text-slate-400">%</span></p>
+        <p class="text-slate-400">Pass Rate</p>
+      </div>
+      <div class="mt-4">
+        <div class="w-full bg-slate-700 rounded-full h-2.5">
+          <div class="bg-emerald-500 h-2.5 rounded-full" [style.width.%]="assessmentPerformance().passRate"></div>
+        </div>
+        <p class="text-sm text-slate-500 text-right mt-1">{{ assessmentPerformance().totalAssessed }} students assessed</p>
+      </div>
+    </div>
+    
+     <!-- Training Progress -->
+    <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+       <h3 class="text-lg font-semibold text-white mb-4">Training Overview</h3>
+       <div class="space-y-4">
+          <div class="bg-slate-900/50 p-4 rounded-lg">
+              <p class="text-sm text-slate-400">Active Students</p>
+              <p class="text-2xl font-bold text-white mt-1">{{ applicantStats().enrolled }}</p>
+          </div>
+           <div class="bg-slate-900/50 p-4 rounded-lg">
+              <p class="text-sm text-slate-400">Batches In Progress</p>
+              <p class="text-2xl font-bold text-white mt-1">1</p>
+          </div>
+           <div class="bg-slate-900/50 p-4 rounded-lg">
+              <p class="text-sm text-slate-400">Avg. Module Completion</p>
+              <p class="text-2xl font-bold text-white mt-1">68%</p>
+          </div>
+       </div>
+    </div>
+
+  </div>
+</div>

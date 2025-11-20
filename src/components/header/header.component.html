@@ -1,0 +1,46 @@
+<header class="h-16 flex-shrink-0 bg-slate-800/30 backdrop-blur-lg border-b border-slate-700 flex items-center justify-between px-6 relative z-10">
+  <div class="flex items-center gap-4">
+    <!-- Breadcrumbs or search bar can go here -->
+    <h1 class="text-xl font-semibold text-white">{{ activeView() }}</h1>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="relative">
+      <button (click)="toggleNotificationPanel()" class="text-slate-400 hover:text-white relative">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        @if(hasUnreadNotifications()) {
+          <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-slate-800"></span>
+        }
+      </button>
+
+      @if(isNotificationPanelOpen()) {
+        <div class="fixed inset-0 z-10" (click)="closeNotificationPanel()"></div>
+        <div class="absolute right-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-20 animate-scale-in origin-top-right">
+            <div class="p-3 border-b border-slate-700">
+                <h3 class="font-semibold text-white">Notifications</h3>
+            </div>
+            <ul class="max-h-96 overflow-y-auto">
+                @for (notification of currentUserNotifications(); track notification.id) {
+                    <li class="p-3 border-b border-slate-700 last:border-0 hover:bg-slate-700/50">
+                        <p class="text-sm text-slate-300">{{ notification.message }}</p>
+                        <p class="text-xs text-slate-500 mt-1">{{ notification.timestamp | date:'short' }}</p>
+                    </li>
+                }
+                @if(currentUserNotifications().length === 0) {
+                    <li class="p-4 text-center text-sm text-slate-500">No new notifications.</li>
+                }
+            </ul>
+        </div>
+      }
+    </div>
+
+    <div class="flex items-center gap-3">
+      <img class="h-10 w-10 rounded-full object-cover" [src]="user().avatarUrl" alt="User Avatar">
+      <div>
+        <p class="font-semibold text-white">{{ user().name }}</p>
+        <p class="text-sm text-slate-400">{{ user().role }}</p>
+      </div>
+    </div>
+  </div>
+</header>

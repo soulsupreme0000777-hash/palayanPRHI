@@ -1,0 +1,98 @@
+<div class="p-6 space-y-6">
+  <header>
+    <h2 class="text-2xl font-bold text-white">My Documents & Resume</h2>
+    <p class="text-slate-400 mt-1">Manage your documents and build your professional resume.</p>
+  </header>
+
+  <!-- Hidden File Input -->
+  <input type="file" #fileInput (change)="onFileSelected($event)" class="hidden">
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Required Documents -->
+    <div class="lg:col-span-1 space-y-6">
+      <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Required Documents</h3>
+        <ul class="space-y-3">
+          @for(doc of requiredDocs(); track doc.name) {
+            <li class="flex items-center justify-between p-3 rounded-md bg-slate-900/50">
+              <div>
+                <p class="font-medium text-white">{{ doc.name }}</p>
+                @if(doc.status === 'Uploaded') {
+                   <span class="text-xs text-emerald-400 flex items-center gap-1.5 mt-1">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                     {{ doc.fileName }}
+                   </span>
+                } @else {
+                  <span class="text-xs text-yellow-400">
+                    {{ doc.status }}
+                  </span>
+                }
+              </div>
+              @if(currentlyUploadingDoc() === doc.name) {
+                <div class="flex items-center justify-center w-20">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-sky-400"></div>
+                </div>
+              } @else {
+                 <button (click)="triggerFileUpload(doc.name)" 
+                      [disabled]="currentlyUploadingDoc() !== null"
+                      class="text-sm font-semibold text-sky-400 hover:text-sky-300 whitespace-nowrap disabled:text-slate-500 disabled:cursor-not-allowed">
+                  {{ doc.status === 'Pending' ? 'Upload' : 'Replace' }}
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+
+    <!-- Resume Builder -->
+    <div class="lg:col-span-2 space-y-6">
+       <div #resumeContainer class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+        <form [formGroup]="resumeForm">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-white">Resume Builder</h3>
+            <button type="button" (click)="exportAsPdf()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              Export as PDF
+            </button>
+          </div>
+          
+          <div class="space-y-6">
+            <!-- Personal Info -->
+            <div class="space-y-2">
+              <label class="font-semibold text-slate-300">Personal Information</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" placeholder="Full Name" formControlName="fullName" class="bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500">
+                <input type="email" placeholder="Email Address" formControlName="email" class="bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500">
+                <input type="tel" placeholder="Phone Number" formControlName="phone" class="bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500">
+                <input type="text" placeholder="Address" formControlName="address" class="bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500">
+              </div>
+            </div>
+            <!-- Skills -->
+            <div class="space-y-2">
+              <label class="font-semibold text-slate-300">Skills & Competencies</label>
+              <textarea placeholder="e.g., Public Speaking, Microsoft Excel, JavaScript..." formControlName="skills" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500" rows="3"></textarea>
+            </div>
+            <!-- Work Experience -->
+            <div class="space-y-4" formArrayName="workExperience">
+              <label class="font-semibold text-slate-300">Work Experience</label>
+              @for (experience of workExperiences.controls; track $index; let i = $index) {
+                <div [formGroupName]="i" class="p-4 bg-slate-900/50 rounded-md border border-slate-700 relative space-y-3">
+                  @if (workExperiences.controls.length > 1) {
+                    <button type="button" (click)="removeExperience(i)" class="absolute top-2 right-2 text-slate-500 hover:text-red-400 p-1 rounded-full hover:bg-slate-700">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                    </button>
+                  }
+                  <input type="text" placeholder="Job Title" formControlName="jobTitle" class="w-full bg-transparent text-white font-semibold placeholder-slate-400 focus:outline-none">
+                  <input type="text" placeholder="Company Name & Location" formControlName="company" class="w-full bg-transparent text-sm text-slate-300 placeholder-slate-400 focus:outline-none mt-1">
+                  <textarea placeholder="Describe your responsibilities and achievements..." formControlName="description" class="w-full bg-transparent text-sm text-slate-400 placeholder-slate-400 focus:outline-none mt-2" rows="2"></textarea>
+                </div>
+              }
+              <button type="button" (click)="addExperience()" class="text-sm font-semibold text-emerald-400 hover:text-emerald-300">+ Add Experience</button>
+            </div>
+          </div>
+        </form>
+       </div>
+    </div>
+  </div>
+</div>

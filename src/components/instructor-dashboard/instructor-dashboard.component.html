@@ -1,0 +1,96 @@
+<div class="p-6 space-y-6">
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-bold text-white">Instructor Dashboard</h2>
+    <button (click)="navigateTo('Training Modules')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+      </svg>
+      Create New Module
+    </button>
+  </div>
+
+  <!-- Assessment Results -->
+  <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-white mb-4">Recent Pre-Assessment Results</h3>
+    <table class="w-full text-left">
+        <thead class="border-b border-slate-600">
+            <tr>
+                <th class="p-3 text-sm font-semibold text-slate-400">Applicant Name</th>
+                <th class="p-3 text-sm font-semibold text-slate-400">Score</th>
+                <th class="p-3 text-sm font-semibold text-slate-400">Status</th>
+                <th class="p-3 text-sm font-semibold text-slate-400">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (applicant of pendingReviewApplicants(); track applicant.email) {
+                <tr class="border-b border-slate-700 last:border-0 hover:bg-slate-700/50">
+                    <td class="p-3 text-white">{{ applicant.name }}</td>
+                    <td class="p-3 text-slate-300">
+                      @if (applicant.assessmentScore !== undefined) {
+                        {{ applicant.assessmentScore }}/{{ applicant.assessmentTotal }}
+                      } @else {
+                        -
+                      }
+                    </td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full uppercase"
+                              [class.bg-emerald-900/50]="applicant.assessmentStatus === 'passed'"
+                              [class.text-emerald-300]="applicant.assessmentStatus === 'passed'"
+                              [class.bg-red-900/50]="applicant.assessmentStatus === 'failed'"
+                              [class.text-red-300]="applicant.assessmentStatus === 'failed'">
+                            {{ applicant.assessmentStatus }}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                      @if (applicant.assessmentStatus === 'passed') {
+                        <button (click)="openReviewModal(applicant)" class="text-emerald-400 hover:text-emerald-300 text-sm font-semibold">View Documents</button>
+                      } @else if (applicant.assessmentStatus === 'failed') {
+                        <button (click)="handleRemediate(applicant)" class="text-yellow-400 hover:text-yellow-300 text-sm font-semibold">Remediate</button>
+                      }
+                    </td>
+                </tr>
+            }
+            @if(pendingReviewApplicants().length === 0) {
+              <tr class="border-b border-slate-700 last:border-0">
+                <td colspan="4" class="p-4 text-center text-slate-500">No applicants awaiting review.</td>
+              </tr>
+            }
+        </tbody>
+    </table>
+  </div>
+  
+  <!-- Active Modules -->
+  <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-white mb-4">Active Training Modules</h3>
+    <div class="space-y-4">
+      @for(module of activeModules; track module.title) {
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <p class="font-medium text-white">{{ module.title }}</p>
+            <p class="text-sm text-slate-400">{{ module.students }} students</p>
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-2.5">
+            <div class="bg-emerald-500 h-2.5 rounded-full" [style.width.%]="module.progress"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (isReviewModalOpen() && applicantToReview(); as applicant) {
+  <app-instructor-review-modal 
+    [applicant]="applicant"
+    (close)="closeReviewModal()"
+    (enroll)="handleEnroll($event)">
+  </app-instructor-review-modal>
+}
+
+@if(isConfirmOpen()) {
+  <app-confirmation-modal
+    [title]="confirmTitle()"
+    [message]="confirmMessage()"
+    (confirm)="handleConfirm()"
+    (cancel)="closeConfirm()">
+  </app-confirmation-modal>
+}

@@ -1,0 +1,99 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="requestCloseModal()">
+  <div class="w-full max-w-2xl bg-slate-800 border border-slate-700 rounded-2xl shadow-lg flex flex-col animate-scale-in" (click)="$event.stopPropagation()">
+    
+    <!-- Header -->
+    <header class="flex items-center justify-between p-4 border-b border-slate-700">
+      <h2 class="text-xl font-bold text-white">{{ assignment().title }}</h2>
+      <button (click)="requestCloseModal()" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </header>
+
+    <!-- Content -->
+    <div class="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
+      @if (isViewMode()) {
+        <div class="space-y-4">
+          <div>
+            <h3 class="font-semibold text-slate-300 mb-1">Status</h3>
+            <span class="px-2 py-1 text-xs font-medium rounded-full"
+                  [class.bg-emerald-900/50]="assignment().status === 'Graded'"
+                  [class.text-emerald-300]="assignment().status === 'Graded'"
+                  [class.bg-sky-900/50]="assignment().status === 'Submitted'"
+                  [class.text-sky-300]="assignment().status === 'Submitted'">
+              {{ assignment().status }}
+            </span>
+          </div>
+
+          @if (assignment().status === 'Graded') {
+            <div>
+              <h3 class="font-semibold text-slate-300 mb-1">Score</h3>
+              <p class="text-lg font-bold text-white">{{ assignment().score }}</p>
+            </div>
+             <div>
+              <h3 class="font-semibold text-slate-300 mb-1">Instructor Feedback</h3>
+              <p class="text-slate-400 bg-slate-900/50 p-3 rounded-md border border-slate-700 italic">"{{ assignment().feedback }}"</p>
+            </div>
+          }
+
+          <div>
+            <h3 class="font-semibold text-slate-300 mb-1">Your Submission</h3>
+            <div class="p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2">
+              <p class="text-slate-300 whitespace-pre-wrap">{{ assignment().submission?.text }}</p>
+              @if (assignment().submission?.fileName; as fileName) {
+                <div class="flex items-center gap-2 pt-2 border-t border-slate-700">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+                  <span class="text-sm font-medium text-emerald-400">{{ fileName }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      } @else {
+        <form [formGroup]="submissionForm" (ngSubmit)="onSubmit()" class="space-y-4">
+           <div>
+            <label for="submissionText" class="block text-sm font-medium text-slate-300 mb-1">Your Submission Text</label>
+            <textarea formControlName="text" id="submissionText" rows="5" class="w-full bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Type any comments or links here..."></textarea>
+           </div>
+           <div>
+            <label for="submissionFile" class="block text-sm font-medium text-slate-300 mb-2">Attach File (Optional)</label>
+            <div class="flex items-center gap-4">
+              <label class="cursor-pointer bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                Choose File
+                <input type="file" id="submissionFile" (change)="onFileChange($event)" class="hidden">
+              </label>
+              @if (fileName()) {
+                <span class="text-slate-300 text-sm">{{ fileName() }}</span>
+              } @else {
+                <span class="text-slate-500 text-sm">No file chosen</span>
+              }
+            </div>
+           </div>
+        </form>
+      }
+    </div>
+
+    <!-- Footer -->
+    <footer class="flex items-center justify-end p-4 border-t border-slate-700 space-x-3">
+        <button (click)="requestCloseModal()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg">
+          {{ isSubmitMode() ? 'Cancel' : 'Close' }}
+        </button>
+        @if (isSubmitMode()) {
+          <button (click)="onSubmit()" [disabled]="submissionForm.invalid" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed">
+            Submit Assignment
+          </button>
+        }
+    </footer>
+
+  </div>
+</div>
+
+@if(isConfirmOpen()) {
+  <app-confirmation-modal
+    title="Discard Submission?"
+    message="You have an unsaved submission. Are you sure you want to discard it?"
+    confirmText="Discard"
+    (confirm)="handleConfirm()"
+    (cancel)="closeConfirm()">
+  </app-confirmation-modal>
+}

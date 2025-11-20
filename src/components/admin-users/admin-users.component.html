@@ -1,0 +1,165 @@
+<div class="p-6 space-y-6">
+  <header class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-white">User Management</h2>
+      <p class="text-slate-400 mt-1">View, manage, and filter all users in the system.</p>
+    </div>
+    <button (click)="openCreateModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 self-start md:self-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+      Create New User
+    </button>
+  </header>
+
+  <div class="bg-slate-800/50 backdrop-blur-lg border border-slate-700 rounded-lg p-4">
+    <!-- Filters -->
+    <div class="flex flex-col md:flex-row gap-4 mb-4">
+      <div class="relative flex-grow">
+        <input 
+          type="text" 
+          placeholder="Search by name or email..."
+          class="w-full bg-slate-900/50 border border-slate-600 rounded-md pl-10 pr-4 py-2 text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+      </div>
+      <select 
+        class="bg-slate-900/50 border border-slate-600 rounded-md px-3 py-2 text-white focus:ring-emerald-500 focus:border-emerald-500"
+        [ngModel]="roleFilter()"
+        (ngModelChange)="roleFilter.set($event)">
+        <option value="All">All Roles</option>
+        <option [value]="RoleEnum.Admin">Admin</option>
+        <option [value]="RoleEnum.Instructor">Instructor</option>
+        <option [value]="RoleEnum.Student">Student Applicant</option>
+      </select>
+    </div>
+
+    <!-- Users Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="border-b border-slate-600">
+                <tr>
+                    <th class="p-4 text-sm font-semibold text-slate-400 w-2/5">User</th>
+                    <th class="p-4 text-sm font-semibold text-slate-400">Email</th>
+                    <th class="p-4 text-sm font-semibold text-slate-400">Role</th>
+                    <th class="p-4 text-sm font-semibold text-slate-400">Status</th>
+                    <th class="p-4 text-sm font-semibold text-slate-400">Actions</th>
+                </tr>
+            </thead>
+            @for (user of filteredUsers(); track user.email) {
+              <tbody class="border-b border-slate-700 last:border-0">
+                  <tr 
+                    class="hover:bg-slate-700/50"
+                    [class.bg-slate-700/50]="expandedInstructorEmail() === user.email">
+                      <td class="p-4 text-white font-medium">
+                        <div 
+                            class="flex items-center gap-3"
+                            [class.cursor-pointer]="user.role === RoleEnum.Instructor"
+                            (click)="user.role === RoleEnum.Instructor && toggleInstructorDetails(user.email)">
+                          <img [src]="user.avatarUrl" [alt]="user.name" class="h-10 w-10 rounded-full">
+                          <span>{{ user.name }}</span>
+                           @if(user.role === RoleEnum.Instructor) {
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500 transition-transform" [class.rotate-90]="expandedInstructorEmail() === user.email" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                          }
+                        </div>
+                      </td>
+                      <td class="p-4 text-slate-300">{{ user.email }}</td>
+                      <td class="p-4">
+                          <span class="px-2 py-1 text-xs font-medium rounded-full"
+                              [class.bg-indigo-900/50]="user.role === RoleEnum.Admin" [class.text-indigo-300]="user.role === RoleEnum.Admin"
+                              [class.bg-sky-900/50]="user.role === RoleEnum.Instructor" [class.text-sky-300]="user.role === RoleEnum.Instructor"
+                              [class.bg-emerald-900/50]="user.role === RoleEnum.Student" [class.text-emerald-300]="user.role === RoleEnum.Student">
+                              {{ user.role }}
+                          </span>
+                      </td>
+                      <td class="p-4 text-slate-300 capitalize">
+                        {{ getApplicantStatus(user) }}
+                      </td>
+                      <td class="p-4">
+                          <div class="flex items-center gap-1">
+                            <button (click)="openEditModal(user)" class="p-2 text-slate-400 hover:text-sky-400 rounded-full hover:bg-slate-700 transition-colors" title="Edit">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <button (click)="handleDeleteUser(user)" class="p-2 text-slate-400 hover:text-red-400 rounded-full hover:bg-slate-700 transition-colors" title="Delete">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+                      </td>
+                  </tr>
+                  @if (user.role === RoleEnum.Instructor && expandedInstructorEmail() === user.email) {
+                    <tr class="bg-slate-900/50">
+                      <td colspan="5" class="p-0">
+                        <div class="p-4 animate-fade-in">
+                          <h4 class="text-md font-semibold text-white mb-3">Enrolled Students</h4>
+                          @if (studentsForExpandedInstructor().length > 0) {
+                            <div class="overflow-x-auto rounded-md border border-slate-700">
+                                <table class="w-full text-left">
+                                  <thead class="bg-slate-800">
+                                    <tr>
+                                      <th class="p-3 text-xs font-semibold text-slate-400">Student Name</th>
+                                      <th class="p-3 text-xs font-semibold text-slate-400">Batch</th>
+                                      <th class="p-3 text-xs font-semibold text-slate-400">Progress</th>
+                                      <th class="p-3 text-xs font-semibold text-slate-400">Attendance</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    @for(student of studentsForExpandedInstructor(); track student.email) {
+                                      <tr class="border-t border-slate-700">
+                                        <td class="p-3 text-sm text-white font-medium">{{ student.name }}</td>
+                                        <td class="p-3 text-sm text-slate-300">{{ student.batch }}</td>
+                                        <td class="p-3 text-sm text-slate-300">
+                                          <div class="flex items-center gap-2">
+                                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                              <div class="bg-emerald-500 h-2 rounded-full" [style.width.%]="student.progress"></div>
+                                            </div>
+                                            <span class="text-xs font-semibold text-white">{{ student.progress }}%</span>
+                                          </div>
+                                        </td>
+                                        <td class="p-3 text-sm text-white font-semibold">{{ student.attendance }}</td>
+                                      </tr>
+                                    }
+                                  </tbody>
+                                </table>
+                            </div>
+                          } @else {
+                            <p class="text-slate-500 text-sm py-4 text-center">No students are currently assigned to this instructor's batches.</p>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+              </tbody>
+            }
+            @if (filteredUsers().length === 0) {
+              <tbody>
+                <tr>
+                  <td colspan="5" class="p-6 text-center text-slate-500">No users found matching your criteria.</td>
+                </tr>
+              </tbody>
+            }
+        </table>
+    </div>
+  </div>
+</div>
+
+@if(isUserModalOpen()) {
+  <app-admin-create-user-modal 
+    [userToEdit]="userForModal()"
+    (close)="closeUserModal()"
+    (saveUser)="handleSaveUser($event)">
+  </app-admin-create-user-modal>
+}
+
+@if(isConfirmOpen()) {
+  <app-confirmation-modal
+    [title]="confirmTitle()"
+    [message]="confirmMessage()"
+    (confirm)="handleConfirm()"
+    (cancel)="closeConfirm()">
+  </app-confirmation-modal>
+}
