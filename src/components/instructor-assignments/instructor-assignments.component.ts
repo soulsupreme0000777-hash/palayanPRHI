@@ -65,7 +65,7 @@ export class InstructorAssignmentsComponent {
     title: ['', Validators.required],
     module: ['', Validators.required],
     dueDate: ['', Validators.required],
-    files: [[], [Validators.required, Validators.minLength(1)]],
+    files: [null as string[] | null, [Validators.required, Validators.minLength(1)]],
   });
 
   openModal(assignment: Assignment | null = null): void {
@@ -75,12 +75,12 @@ export class InstructorAssignmentsComponent {
     if (assignment) {
       this.editingAssignment.set(assignment);
       const fileNames = assignment.fileNames || [];
-      this.assignmentForm.setValue({
+      this.assignmentForm.patchValue({
           title: assignment.title,
           module: assignment.module || '',
           dueDate: assignment.dueDate,
-          files: fileNames,
       });
+      this.assignmentForm.controls.files.setValue(fileNames);
       this.assignmentFileNames.set(fileNames);
     } else {
       this.editingAssignment.set(null);
