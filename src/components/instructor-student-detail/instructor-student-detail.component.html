@@ -21,7 +21,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-slate-900/50 p-4 rounded-lg text-center">
                 <p class="text-sm text-slate-400">Overall Progress</p>
-                <p class="text-2xl font-bold text-emerald-400 mt-1">{{ student().progress }}%</p>
+                <p class="text-2xl font-bold text-emerald-400 mt-1">{{ student().trainingProgress }}%</p>
             </div>
             <div class="bg-slate-900/50 p-4 rounded-lg text-center">
                 <p class="text-sm text-slate-400">Attendance</p>
@@ -33,7 +33,7 @@
             </div>
             <div class="bg-slate-900/50 p-4 rounded-lg text-center">
                 <p class="text-sm text-slate-400">Assignments</p>
-                <p class="text-2xl font-bold text-white mt-1">{{ student().assignmentsCompleted }}/{{ student().totalAssignments }}</p>
+                <p class="text-2xl font-bold text-white mt-1">{{ student().assignmentsCompleted }}/{{ student().assignmentsTotal }}</p>
             </div>
         </div>
 
